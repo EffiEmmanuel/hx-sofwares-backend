@@ -21,6 +21,7 @@ export default class UserService {
     const areFieldsEmpty = validateFields([
       user.username,
       user.hwid,
+      user.invite,
       user.discord,
     ]);
 
@@ -39,18 +40,33 @@ export default class UserService {
     //   return userAlreadyExistsWithEmail;
 
     // If username already exists
-    if (userAlreadyExistsWithEmail.status === 409)
+    if (userAlreadyExistsWithUsername.status === 409)
       return userAlreadyExistsWithUsername;
 
     // Hash password
     // const salt = bcrypt.genSaltSync(10);
     // const hashedPassword = bcrypt.hashSync(user.password, salt);
 
+    // Validate Discord id
+    // Define the regular expression pattern for Discord user ID
+    const regex = /^[0-9]{17,19}$/;
+
+    // Test the input string against the pattern
+    const isDiscordId = regex.test(user.discord);
+
+    if (!isDiscordId) {
+      return {
+        status: 401,
+        message: "Wrong Discord ID (example ID: 1114148473508479046).",
+      };
+    }
+
     // If the email is available, then proceed to sign up the user
     const newUser = await this.UserModel.create({
       //   password: hashedPassword,
       ...user,
     });
+
     return {
       status: 201,
       message: "Your account has been created successfully!",

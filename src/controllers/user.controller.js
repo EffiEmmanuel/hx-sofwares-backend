@@ -11,13 +11,14 @@ const userService = new UserService(UserModel);
 
 // Sign up user
 export const signupUser = async (req, res) => {
-  const { username, hwid, discord } = req.body;
+  const { username, hwid, invite, discord } = req.body;
 
   try {
     // Create new user
     const user = await userService.signupUser({
       username,
       hwid,
+      invite,
       discord,
     });
 

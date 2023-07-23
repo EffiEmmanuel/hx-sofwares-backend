@@ -19,11 +19,21 @@ export default class ConfigService {
     // areFieldsEmpty is an object that contains a status and message field
     if (areFieldsEmpty) return areFieldsEmpty;
 
-    // Check if user is already signed up
-    const configAlreadyExists = await checkConfigValidity(config.owner);
+    const nameRegex = /^[a-zA-Z0-9_]+$/;
+    const isNameValid = nameRegex.test(config.name);
 
-    // If config already exists
-    if (configAlreadyExists.status === 409) return configAlreadyExists;
+    if (!isNameValid) {
+      return {
+        status: 400,
+        message: "Unauthorized",
+      };
+    }
+
+    // // Check if user is already signed up
+    // const configAlreadyExists = await checkConfigValidity(config.owner);
+
+    // // If config already exists
+    // if (configAlreadyExists.status === 409) return configAlreadyExists;
 
     // If the config is available, then proceed to create config
     const newConfig = await this.ConfigModel.create({
@@ -46,9 +56,9 @@ export default class ConfigService {
   }
 
   // This service GETS a config by their owner name
-  async getConfigByOwnerName(owner) {
+  async getConfigByOwnerName(name, owner) {
     // Validate if fields are empty
-    const areFieldsEmpty = validateFields([owner]);
+    const areFieldsEmpty = validateFields([name, owner]);
 
     // areFieldsEmpty is an object that contains a status and message field
     if (areFieldsEmpty) return areFieldsEmpty;
@@ -56,36 +66,50 @@ export default class ConfigService {
     // Check if any config exists with the owner
     const config = await this.ConfigModel.findOne({
       owner: owner,
+      name: name,
     });
 
     if (!config) {
       return {
         status: 404,
-        message: "No config exists with the owner specified.",
+        message: "No config exists with the owner and name specified.",
       };
     }
 
     return {
       status: 200,
-      message: `Fetched config with owner name ${owner}.`,
+      message: `Fetched config.`,
       config: config,
     };
   }
 
   // This service GETS a config by their id
-  async getConfigById(_id) {
+  async getConfigById(id, username) {
     // Validate if fields are empty
-    const areFieldsEmpty = validateFields([_id]);
+    const areFieldsEmpty = validateFields([id]);
 
     // areFieldsEmpty is an object that contains a status and message field
     if (areFieldsEmpty) return areFieldsEmpty;
 
-    // Check if any config exists with the _id
+    // Check if any config exists with the id
     const config = await this.ConfigModel.findOne({
-      _id: _id,
+      id: id,
+      owner: username,
     });
 
-    if (!config) {
+    if (config) {
+      return {
+        status: 400,
+        message: "Cannot import your own config.",
+      };
+    }
+
+    // Check if any config exists with the id
+    const newConfig = await this.ConfigModel.findOne({
+      id: id,
+    });
+
+    if (!newConfig) {
       return {
         status: 404,
         message: "No config exists with the id specified.",
@@ -94,20 +118,26 @@ export default class ConfigService {
 
     return {
       status: 200,
-      message: `Fetched config with _id ${_id}.`,
-      config: config,
+      message: `Fetched config with id ${id}.`,
+      config: newConfig,
     };
   }
 
-  // This service GETS all configs
-  async getConfigs() {
+  // This service GETS all user configs
+  async getConfigs(owner) {
     // Fetch all configs
-    const configs = await this.ConfigModel.find({});
+    const configs = await this.ConfigModel.find({ owner: owner });
+
+    const configList = configs?.map((config) => ({
+      name: config.name,
+      id: config.id,
+      formatted: `[${config.id}] ${config.name}`,
+    }));
 
     return {
       status: 200,
-      message: `All configs fetched.`,
-      configs: configs,
+      message: `All user configs fetched.`,
+      configs: configList,
     };
   }
 

@@ -15,8 +15,10 @@ import { verifyUserToken } from "../util/auth.helper.js";
 const userRouter = express.Router();
 
 // Routes
+// LOGIN - SAME AS IN YOUR EXISTING SERVER
 userRouter.post("/login", loginUser);
-userRouter.post("/", signupUser);
+// REGISTER - SAME AS IN YOUR EXISTING SERVER
+userRouter.post("/register", signupUser);
 userRouter.get("/", verifyUserToken, getUsers);
 userRouter.get("/get-user-by-username", verifyUserToken, getUserByUsername);
 userRouter.get("/get-user-by-id", verifyUserToken, getUserById);

@@ -11,14 +11,17 @@ const configsService = new ConfigService(ConfigsModel);
 
 // Create Config
 export const createConfig = async (req, res) => {
-  const { owner, name, data } = req.body;
+  const { name } = req.params;
+  const { owner, data } = req.body;
 
   try {
     // Create new config
+    let [firstKey] = Object.keys(req.body);
+
     const config = await configsService.createConfig({
       owner,
       name,
-      data,
+      data: firstKey,
     });
 
     // Return a response
@@ -32,11 +35,12 @@ export const createConfig = async (req, res) => {
 
 // Get config by owner name
 export const getConfigByOwnerName = async (req, res) => {
-  const { owner } = req.body;
+  const { name } = req.params;
+  const { username } = req.body;
 
   try {
     // Fetch config
-    const config = await configsService.getConfigByOwnerName(owner);
+    const config = await configsService.getConfigByOwnerName(name, username);
 
     // Return a response
     return res
@@ -49,11 +53,11 @@ export const getConfigByOwnerName = async (req, res) => {
 
 // Get config by _id
 export const getConfigById = async (req, res) => {
-  const { _id } = req.body;
+  const { id } = req.params;
 
   try {
     // Fetch config
-    const config = await configsService.getConfigById(_id);
+    const config = await configsService.getConfigById(id);
 
     // Return a response
     return res
@@ -64,11 +68,12 @@ export const getConfigById = async (req, res) => {
   }
 };
 
-// Get configs
+// Get user configs
 export const getConfigs = async (req, res) => {
+  const { owner } = req.body;
   try {
-    // Fetch configs
-    const configs = await configsService.getConfigs();
+    // Fetch user configs
+    const configs = await configsService.getConfigs(owner);
 
     // Return a response
     return res
@@ -80,11 +85,11 @@ export const getConfigs = async (req, res) => {
 };
 
 // Delete config by owner name
-export const deleteConfigByOwnerName = async (req, res) => {
-  const { owner } = req.body;
+export const deleteConfigByName = async (req, res) => {
+  const { name } = req.params;
   try {
     // DELETE config
-    const config = await configsService.deleteConfigByOwnerName(owner);
+    const config = await configsService.deleteConfigByOwnerName(name);
 
     // Return a response
     return res
